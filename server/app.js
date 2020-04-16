@@ -1,10 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const morgan = require('morgan');
 const Config = require('./config.js');
 const authRoutes = require('./routes/auth');
+const postRoutes = require('./routes/post');
 
 const app = express();
+
+app.use(morgan("dev"));
 
 app.use(bodyParser.json());
 
@@ -18,11 +22,8 @@ mongoose.connection.on('connected', () => {
     console.log('MongoDB connected successfully!');
 })
 
-app.get('/', (req, res, next) => {
-    res.send('Hello World');
-})
-
 app.use('/', authRoutes);
+app.use('/', postRoutes);
 
 app.listen(Config.SERVER_PORT, () => {
     console.log(`Server is running on port ${Config.SERVER_PORT}`);

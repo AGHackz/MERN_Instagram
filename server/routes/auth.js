@@ -1,6 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('./../models/user');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('./../config');
 
 const router = express.Router();
 
@@ -64,23 +66,39 @@ router.post('/signup', (req, res, next) => {
 
 router.post('/login', (req, res, next) => {
     const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({
+            s: false,
+            ed: 'Please provide email and password!'
+        });
+    }
     User.findOne({ 'email': email})
     .then((user) => {
         if (user) {
             bcrypt.compare(password, user.hashedPassword, (err, isMatched) => {
                 if (isMatched) {
-                    return res.json({
-                        s: true,
-                        msg: 'Login successfully!',
-                        data: {
-                            email,
-                            name: user.name
+                    jwt.sign({"_id": user._id}, JWT_SECRET, (err, token) => {
+                        if (!err) {
+                            return res.json({
+                                s: true,
+                                msg: 'Login successfully!',
+                                data: {
+                                    email,
+                                    name: user.name,
+                                    token
+                                }
+                            })
+                        } else {
+                            return res.status(400).json({
+                                s: false,
+                                msg: 'Something went wrong!'
+                            })
                         }
-                    })
+                    });
                 } else {
-                    return res.json({
+                    return res.status(400).json({
                         s: false,
-                        ed: 'Password is incorect.'
+                        ed: 'Invalid Email or Password.'
                     })
                 }
             })
