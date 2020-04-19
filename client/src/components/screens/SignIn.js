@@ -31,7 +31,7 @@ const SignIn = () => {
                     M.toast({html: data.msg, classes: "#66bb6a green lighten-1"});
                 }
                 localStorage.setItem('auth_token', data.data.token);
-                localStorage.setItem('user', data.data);
+                localStorage.setItem('user', JSON.stringify(data.data));
                 console.log("Dispatch: ", typeof(dispatch));
                 dispatch({type: 'USER', payload: data.data});
                 history.push('/');
