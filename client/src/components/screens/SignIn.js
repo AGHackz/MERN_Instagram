@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import M from 'materialize-css';
+import { UserContext } from './../../App';
 
 const SignIn = () => {
 
+    const { state, dispatch } = useContext(UserContext);
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const history = useHistory();
+    const history = useHistory(); 
 
     const postData = () => {
         fetch('/login', {
@@ -28,6 +31,9 @@ const SignIn = () => {
                     M.toast({html: data.msg, classes: "#66bb6a green lighten-1"});
                 }
                 localStorage.setItem('auth_token', data.data.token);
+                localStorage.setItem('user', data.data);
+                console.log("Dispatch: ", typeof(dispatch));
+                dispatch({type: 'USER', payload: data.data});
                 history.push('/');
                 console.log("Login Response: ", data);
             }
