@@ -1,11 +1,16 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const multer = require('multer');
 const Post = require('./../models/post');
 const { requireAuthorization } = require('./../middlewares/requireAuth');
 const router = express.Router();
+const path = require('path');
+var appDir = path.dirname(require.main.filename);
+const uploadsPostDir = "/public/uploads/posts/";
+const postPhotoUpload = multer({dest: appDir + uploadsPostDir});
+const fs = require('fs');
 
-router.post('/posts', requireAuthorization, (req, res, next) => {
-    const { title, body, photo } = req.body;
+router.post('/posts', requireAuthorization, postPhotoUpload.single('photo'), (req, res, next) => {
+    const { title, body } = req.body;
     if (!title || !body) {
         return res.status(400).json({
             s: false,
@@ -15,9 +20,16 @@ router.post('/posts', requireAuthorization, (req, res, next) => {
     const post = new Post({
         title,
         body,
-        photo,
         postedBy: req.user
     });
+    console.log("File Details: ", req.file);
+    if (req.file) {
+        const originalFileName = req.file.originalname;
+        const fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+        const photoFinalPath = appDir + uploadsPostDir + req.file.filename + "." + fileExtension;
+        fs.renameSync(req.file.path, photoFinalPath);
+        post.photo = photoFinalPath;   
+    }
     post.save()
     .then(savedPost => {
         if (savedPost) {

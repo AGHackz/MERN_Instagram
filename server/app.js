@@ -9,6 +9,7 @@ const postRoutes = require('./routes/post');
 const app = express();
 
 app.use(morgan("dev"));
+app.use(express.static('/public'));
 
 app.use(bodyParser.json());
 
